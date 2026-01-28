@@ -81,7 +81,7 @@ function generateState(): string {
 async function getAvailablePort(preferredPort?: number): Promise<number> {
   return new Promise((resolve, reject) => {
     const server = createServer()
-    server.listen(preferredPort || 0, '127.0.0.1', () => {
+    server.listen(preferredPort || 0, process.env.ANTIGRAVITY_HOST || '127.0.0.1', () => {
       const address = server.address()
       if (address && typeof address === 'object') {
         const port = address.port
@@ -337,7 +337,8 @@ export async function resolveProjectId(accessToken: string): Promise<ProjectIdRe
  * Start OAuth login flow
  */
 export async function startOAuthFlow(options: OAuthOptions = {}): Promise<OAuthResult> {
-  const port = await getAvailablePort(options.port)
+  const envPort = process.env.ANTIGRAVITY_OAUTH_PORT ? parseInt(process.env.ANTIGRAVITY_OAUTH_PORT, 10) : undefined
+  const port = await getAvailablePort(options.port || envPort)
   const redirectUri = `http://127.0.0.1:${port}/callback`
   const state = generateState()
   
@@ -447,7 +448,7 @@ export async function startOAuthFlow(options: OAuthOptions = {}): Promise<OAuthR
       }
     })
     
-    server.listen(port, '127.0.0.1', async () => {
+    server.listen(port, process.env.ANTIGRAVITY_HOST || '127.0.0.1', async () => {
       info('')
       info('Opening browser for Google login...')
       info('')

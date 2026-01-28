@@ -1,0 +1,25 @@
+services:
+  antigravity:
+    image: node:lts
+    container_name: antigravity_cli
+    working_dir: /app
+    volumes:
+      - .:/app
+      # Create an anonymous volume for node_modules to avoid syncing with host
+      - /app/node_modules
+      # Persist configuration and tokens
+      - antigravity_config:/root/.config/antigravity-usage
+      # Custom shell configuration with welcome message
+      - ./.docker-bashrc:/root/.bashrc
+    environment:
+      - ANTIGRAVITY_HOST=0.0.0.0
+      - ANTIGRAVITY_OAUTH_PORT=8765
+    ports:
+      # Expose a less common port for OAuth callback
+      # Usage: antigravity-usage login --port 8765 --no-browser
+      - "8765:8765"
+    # Install dependencies, build, link for global CLI usage, and keep container running
+    command: bash -c "npm install && npm run build && npm link && tail -f /dev/null"
+
+volumes:
+  antigravity_config:
